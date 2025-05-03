@@ -20,34 +20,73 @@ export async function POST(request: Request) {
 
     // Prepare the prompt for animation code generation
     const promptText = `
-      Based on the analysis of this logo:
-      ${JSON.stringify(analysis, null, 2)}
+  Based on the analysis of this logo:
+  ${JSON.stringify(analysis, null, 2)}
+  
+  Generate animation code that creates a semantically meaningful animation for this logo.
+  
+  The SVG structure is:
+  ${JSON.stringify(svgLayers, null, 2)}
+  
+  Please create animation code that uses either anime.js OR Animate.css animations. 
+  
+  If using Animate.css, use these predefined animations:
+  - Attention seekers: bounce, flash, pulse, rubberBand, shake, swing, tada, wobble
+  - Bouncing entrances: bounceIn, bounceInDown, bounceInLeft, bounceInRight, bounceInUp
+  - Bouncing exits: bounceOut, bounceOutDown, bounceOutLeft, bounceOutRight, bounceOutUp
+  - Fading entrances: fadeIn, fadeInDown, fadeInDownBig, fadeInLeft, fadeInLeftBig, fadeInRight, fadeInRightBig, fadeInUp, fadeInUpBig
+  - Fading exits: fadeOut, fadeOutDown, fadeOutDownBig, fadeOutLeft, fadeOutLeftBig, fadeOutRight, fadeOutRightBig, fadeOutUp, fadeOutUpBig
+  - Flippers: flip, flipInX, flipInY, flipOutX, flipOutY
+  - Lightspeed: lightSpeedIn, lightSpeedOut
+  - Rotating: rotate, rotateDownLeft, rotateDownRight, rotateUpLeft, rotateUpRight
+  - Rotating entrances: rotateIn, rotateInDownLeft, rotateInDownRight, rotateInUpLeft, rotateInUpRight
+  - Rotating exits: rotateOut, rotateOutDownLeft, rotateOutDownRight, rotateOutUpLeft, rotateOutUpRight
+  - Specials: hinge, rollIn, rollOut
+  - Zooming entrances: zoomIn, zoomInDown, zoomInLeft, zoomInRight, zoomInUp
+  - Zooming exits: zoomOut, zoomOutDown, zoomOutLeft, zoomOutRight, zoomOutUp
+  - Sliding entrances: slideInDown, slideInLeft, slideInRight, slideInUp
+  - Sliding exits: slideOutDown, slideOutLeft, slideOutRight, slideOutUp
+  
+  For Animate.css animations, use this pattern:
+  
+  function animateLogo() {
+    // Get elements
+    const elements = document.querySelectorAll('svg *[id]');
+    
+    // Apply animations with staggered delays
+    elements.forEach((el, index) => {
+      // Add the base animated class
+      el.classList.add('animated');
       
-      Generate anime.js animation code that creates a semantically meaningful animation for this logo.
+      // Add the specific animation class based on what the element represents
+      el.classList.add('fadeIn'); // Or another animation name
       
-      The SVG structure is:
-      ${JSON.stringify(svgLayers, null, 2)}
+      // Set delay for staggered effect
+      el.style.animationDelay = \`\${index * 0.2}s\`;
       
-      Please create animation code that:
-      
-      1. Animates the primary element in a way that reflects what it represents (e.g., if it's a bird, make it fly in; if it's a wave, make it undulate)
-      
-      2. Properly sequences the animation of secondary elements to support the primary element
-      
-      3. Times the text elements to appear at an appropriate moment
-      
-      4. Uses appropriate easing functions for smooth, professional animations
-      
-      5. Includes descriptive comments for each animation block to explain what's happening
-      
-      Your code should use anime.js syntax and target elements by their IDs. Format your response as valid JavaScript that creates a timeline using anime.js.
-      
-      Include a conceptual description at the top explaining the overall animation approach, followed by the complete, working code.
-      
-      The HTML has already loaded the anime.js library and contains all the SVG elements with their IDs as specified in the analysis.
-      
-      Return just the JavaScript code to execute the animation.
-    `
+      // Optional: set duration
+      el.style.animationDuration = '1s';
+    });
+  }
+  
+  Choose the animation type that best fits the semantic meaning of each element.
+  
+  1. Animates the primary element in a way that reflects what it represents (e.g., if it's a bird, make it fly in; if it's a wave, make it undulate)
+  
+  2. Properly sequences the animation of secondary elements to support the primary element
+  
+  3. Times the text elements to appear at an appropriate moment
+  
+  4. Includes descriptive comments for each animation block to explain what's happening
+  
+  Your code should target elements by their IDs. Format your response as valid JavaScript that creates a timeline.
+  
+  Include a conceptual description at the top explaining the overall animation approach, followed by the complete, working code.
+  
+  The HTML has already loaded the necessary libraries and contains all the SVG elements with their IDs as specified in the analysis.
+  
+  Return just the JavaScript code to execute the animation.
+`
 
     // Call Claude API for animation code generation
     const response = await fetch("https://api.anthropic.com/v1/messages", {
