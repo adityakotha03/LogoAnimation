@@ -4,13 +4,15 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, Play } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 
-// Props types
 type Layer = { id: string; name: string; svgContent: string }
 type SvgAnalysis = { elements: any[]; groupings: any[]; conceptDescription: string }
-interface AnimationGeneratorProps {
-  analysis: SvgAnalysis | null
+
+interface AnimationStageProps {
+  analysis: SvgAnalysis
   svgLayers: Layer[]
   svgContent: string
 }
@@ -22,7 +24,7 @@ declare global {
   }
 }
 
-export function AnimationGenerator({ analysis, svgLayers, svgContent }: AnimationGeneratorProps) {
+export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationStageProps) {
   const [animationCode, setAnimationCode] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,7 +109,7 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
       try {
         // Strip DOMContentLoaded wrapper if present
         let runCode = code
-        const match = runCode.match(/document\.addEventListener$$'DOMContentLoaded',\s*function\($$\s*{([\s\S]*)}\);?/)
+        const match = runCode.match(/document\.addEventListener$$'DOMContentLoaded',\s*function$$$$\s*{([\s\S]*)}$$;?/)
         if (match && match[1]) {
           runCode = match[1]
         }
@@ -170,10 +172,6 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
 
   // Generate code
   const generateAnimationCode = async () => {
-    if (!analysis) {
-      toast({ title: "Error", description: "No logo analysis available", variant: "destructive" })
-      return
-    }
     setIsGenerating(true)
     setError(null)
 
@@ -269,8 +267,8 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
           <div className="flex flex-wrap gap-2">
             <Button
               onClick={generateAnimationCode}
-              disabled={isGenerating || !analysis || !isAnimeJsLoaded}
-              className="flex-1"
+              disabled={isGenerating || !isAnimeJsLoaded}
+              className="flex-1 bg-purple-600 hover:bg-purple-700"
             >
               {isGenerating ? (
                 <>
@@ -302,8 +300,8 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
           <div className="mt-4 flex space-x-2">
             <Button
               onClick={testAnimation}
-              disabled={!isAnimeJsLoaded || animationCode.trim() === ""}
-              className="bg-gradient-to-br from-gray-900 to-black text-white hover:from-black hover:to-gray-800 transition-all shadow-lg"
+              disabled={!isAnimeJsLoaded}
+              className="bg-purple-600 hover:bg-purple-700 text-white transition-all shadow-lg"
             >
               <Play className="mr-2 h-4 w-4" /> Run Animation
             </Button>
@@ -311,16 +309,18 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
         </CardContent>
       </Card>
 
-      {/* {animationCode && (
+      {animationCode && (
         <Card>
-          <CardHeader><CardTitle>Animation Options</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Animation Options</CardTitle>
+          </CardHeader>
           <CardContent>
             <Tabs defaultValue="code">
               <TabsList className="mb-4">
                 <TabsTrigger value="code">Edit Code Directly</TabsTrigger>
                 <TabsTrigger value="analysis">Edit Analysis</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="code" className="space-y-4">
                 <div className="bg-gray-100 p-4 rounded-md">
                   <h3 className="font-medium mb-2">Code Editor</h3>
@@ -329,15 +329,15 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
                     onChange={(e) => setAnimationCode(e.target.value)}
                     className="font-mono text-sm h-[200px] whitespace-pre bg-white"
                   />
-                  <Button 
-                    className="mt-2 bg-gradient-to-r from-gray-700 to-gray-900 text-white hover:from-gray-900 hover:to-black transition-all" 
+                  <Button
+                    className="mt-2 bg-purple-600 hover:bg-purple-700 text-white transition-all"
                     onClick={applyCodeChanges}
                   >
                     <Play className="mr-2 h-4 w-4" /> Run Modified Code
                   </Button>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="analysis" className="space-y-4">
                 <div className="bg-gray-100 p-4 rounded-md">
                   <h3 className="font-medium mb-2">Analysis Editor</h3>
@@ -348,13 +348,13 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
                     value={analysis?.conceptDescription || ""}
                     onChange={(e) => {
                       if (analysis) {
-                        analysis.conceptDescription = e.target.value;
+                        analysis.conceptDescription = e.target.value
                       }
                     }}
                     className="h-[200px] bg-white"
                   />
-                  <Button 
-                    className="mt-2 bg-gradient-to-r from-blue-700 to-indigo-800 text-white hover:from-blue-800 hover:to-indigo-900 transition-all" 
+                  <Button
+                    className="mt-2 bg-purple-600 hover:bg-purple-700 text-white transition-all"
                     onClick={generateAnimationCode}
                   >
                     <Loader2 className="mr-2 h-4 w-4" /> Regenerate Animation
@@ -364,7 +364,7 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
             </Tabs>
           </CardContent>
         </Card>
-      )} */}
+      )}
     </div>
   )
 }

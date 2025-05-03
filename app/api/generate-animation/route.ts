@@ -83,15 +83,15 @@ export async function POST(request: Request) {
     try {
       // Extract the code from Claude's response
       const textContent = data.content[0].text
-      
+
       // Split response into description and code parts
       const parts = textContent.split("```")
-      
+
       // First part is the conceptual description
       if (parts.length > 0) {
         conceptDescription = parts[0].trim()
       }
-      
+
       // Find code content (it might be wrapped in markdown code blocks)
       const codeMatch =
         textContent.match(/```javascript\n([\s\S]*?)\n```/) ||
