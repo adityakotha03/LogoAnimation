@@ -107,16 +107,16 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 w-full">
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-xl">
-              <Image 
-                src="/svg_figma.jpg" 
-                alt="Exporting from Figma" 
-                fill 
-                className="object-cover" 
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-            </div>
+          <div className="relative w-full aspect-[2928/1841] rounded-xl overflow-hidden shadow-xl">
+            <Image 
+              src="/svg_figma.jpg"
+              alt="Exporting from Figma"
+              fill
+              className="object-contain" 
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
+          </div>
           </div>
             <div className="space-y-6 order-1 md:order-2">
               <h2 className="text-3xl md:text-5xl font-bold">Exporting from Figma</h2>
