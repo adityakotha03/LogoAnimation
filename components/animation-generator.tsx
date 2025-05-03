@@ -281,18 +281,18 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
             dangerouslySetInnerHTML={{ __html: svgContent }}
           />
           <div className="mt-4 flex space-x-2">
-            <Button 
-              onClick={testAnimation} 
-              disabled={!isAnimeJsLoaded} 
-              className="bg-gradient-to-br from-gray-900 to-black text-white hover:from-black hover:to-gray-800 transition-all shadow-lg"
-            >
-              <Play className="mr-2 h-4 w-4" /> Run Animation
-            </Button>
+          <Button
+            onClick={testAnimation}
+            disabled={!isAnimeJsLoaded || animationCode.trim() === ""}
+            className="bg-gradient-to-br from-gray-900 to-black text-white hover:from-black hover:to-gray-800 transition-all shadow-lg"
+          >
+            <Play className="mr-2 h-4 w-4" /> Run Animation
+          </Button>
           </div>
         </CardContent>
       </Card>
 
-      {animationCode && (
+      {/* {animationCode && (
         <Card>
           <CardHeader><CardTitle>Animation Options</CardTitle></CardHeader>
           <CardContent>
@@ -345,7 +345,7 @@ export function AnimationGenerator({ analysis, svgLayers, svgContent }: Animatio
             </Tabs>
           </CardContent>
         </Card>
-      )}
+      )} */}
     </div>
   );
 }
