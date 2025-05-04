@@ -110,6 +110,8 @@ Claude Sonnet 3.7 provides a written explanation of the animation approach, help
 
 ## Usage Examples
 
+If you don't have any, you can download the Gary logo [here](assets/Gary.svg).
+
 ### Example 1: Logo Animation
 
 The "Gary" logo animation demonstrates how Animify can take a simple logo and create a playful, engaging animation that reflects the character's personality:
