@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model: "claude-3-7-sonnet-20250219",
-        max_tokens: 1000,
+        max_tokens: 2500,
         messages: [
           {
             role: "user",
