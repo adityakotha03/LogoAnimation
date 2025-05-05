@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, Play, RefreshCw } from "lucide-react" // Added RefreshCw for replay
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast" // Assuming correct path
+import { VideoUpload } from "./video-stage"
 
 type Layer = { id: string; name: string; svgContent: string }
 type SvgAnalysis = { elements: any[]; groupings: any[]; conceptDescription: string }
@@ -31,9 +31,45 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
   const [error, setError] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false) // Tracks if the *last run* animation is playing
   const [isAnimeJsLoaded, setIsAnimeJsLoaded] = useState(false)
+  const [backgroundVideo, setBackgroundVideo] = useState<string | null>(null)
   const [editedAnalysis, setEditedAnalysis] = useState<SvgAnalysis>({ ...analysis })
   const previewRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast()
+
+  // Modified preview container styles
+  const previewContainerStyle = {
+    position: 'relative' as const,
+    width: '100%',
+    minHeight: '200px',
+    backgroundColor: backgroundVideo ? 'black' : '#121212',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const svgOverlayStyle = {
+    position: 'absolute' as const,
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  };
+
+  const videoStyle = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  // Handle video selection
+  const handleVideoSelect = (videoUrl: string | null) => {
+    setBackgroundVideo(videoUrl);
+  };
 
   // Update editedAnalysis whenever the original analysis changes
   useEffect(() => {
@@ -77,160 +113,160 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
   // Reset SVG DOM
   const resetSvg = useCallback(() => {
     if (previewRef.current && svgContent) {
-      // ... (pause animation logic) ...
       window.logoAnimation = undefined;
-  
-      // *** ADD THIS LOG ***
-      console.log("--- SVG Content being set in resetSvg ---");
-      console.log(svgContent);
-      console.log("--- End SVG Content ---");
-  
-      previewRef.current.innerHTML = svgContent;
+      
+      // Create or get the SVG overlay container
+      let overlayContainer = previewRef.current.querySelector('.svg-overlay-container') as HTMLDivElement;
+      if (!overlayContainer) {
+        overlayContainer = document.createElement('div');
+        overlayContainer.className = 'svg-overlay-container';
+        Object.assign(overlayContainer.style, {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: '10'
+        });
+        previewRef.current.appendChild(overlayContainer);
+      }
+      
+      overlayContainer.innerHTML = svgContent;
+      overlayRef.current = overlayContainer;
       setIsPlaying(false);
-      console.log("SVG reset potentially complete (check DOM).");
-  
-      // Log check *immediately* after setting innerHTML (might still be 0)
-      const immediateCheck = previewRef.current.querySelectorAll("svg *[id]");
-      console.log(`Immediate check after innerHTML: ${immediateCheck.length} elements with IDs found.`);
-  
-  
-      requestAnimationFrame(() => {
-        if (previewRef.current) {
-            const testElements = previewRef.current.querySelectorAll("svg *[id]");
-            console.log(`requestAnimationFrame check: ${testElements.length} SVG elements with IDs found.`);
-        }
-      });
-  
-    } else {
-      console.warn("Preview ref is null or svgContent is empty, cannot reset SVG", { hasPreviewRef: !!previewRef.current, hasSvgContent: !!svgContent });
+      
+      // Scale SVG to fit container while maintaining aspect ratio
+      const svg = overlayContainer.querySelector('svg');
+      if (svg instanceof SVGElement) {
+        Object.assign(svg.style, {
+          maxWidth: '100%',
+          maxHeight: '100%',
+          width: 'auto',
+          height: 'auto'
+        });
+      }
     }
-  }, [svgContent]); // Dependency is correct
+  }, [svgContent]);
+
+  // Cleanup function for video URLs
+  useEffect(() => {
+    return () => {
+      if (backgroundVideo) {
+        URL.revokeObjectURL(backgroundVideo);
+      }
+    };
+  }, [backgroundVideo]);
 
   // Execute animation code
-    // Execute animation code
-    const executeAnimationCode = useCallback(
-      (code: string) => {
-        console.log("Executing animation code...");
-        setError(null);
-  
-        if (!code?.trim()) { /* ... no code check ... */ return; }
-        if (!window.anime) { /* ... anime.js check ... */ return; }
-        if (!previewRef.current) { /* ... previewRef check ... */ return; }
-  
-        resetSvg();
-  
-        requestAnimationFrame(() => {
-           setTimeout(() => {
-              if (!previewRef.current) return;
-  
-              const elementsCheck = previewRef.current.querySelectorAll("svg *[id]");
-              console.log(`Verifying elements inside timeout: ${elementsCheck.length} with IDs found.`);
-              if (elementsCheck.length === 0) {
-                  console.warn("Still no SVG elements with IDs found just before execution.");
-                  setError("SVG elements not ready for animation.");
-                  toast({ title: "Error", description: "SVG elements not found in time.", variant: "destructive" });
-                  return;
-              }
-  
-              const animeInstance = window.anime;
-              const origTimeline = animeInstance.timeline;
-              let timelineCreated = false;
-              let capturedTimeline: any = null; // Backup capture via override
-  
-              // Override timeline (keep as a backup mechanism)
-              animeInstance.timeline = ((opts: any) => {
-                console.log("anime.timeline() override triggered."); // Log trigger
-                const tl = origTimeline.call(animeInstance, opts);
-                capturedTimeline = tl;
-                timelineCreated = true;
-                return tl;
-              }) as any;
-  
-              try {
-                let runCode = code;
-                // Strip DOMContentLoaded wrapper (less likely needed now)
-                const domContentMatch = runCode.match(/document\.addEventListener\(['"]DOMContentLoaded['"],\s*function\s*\(\)\s*{([\s\S]*)}\);?/i);
-                 if (domContentMatch && domContentMatch[1]) {
-                   console.log("Stripped DOMContentLoaded wrapper.");
-                   runCode = domContentMatch[1].trim();
-                 }
-  
-                // --- *** NEW: Modify code to DEFINE and CALL function *** ---
-                let finalCodeToRun = runCode;
-                const functionDefinitionMatch = runCode.match(/function\s+([a-zA-Z0-9_]+)\s*\(/);
-  
-                if (functionDefinitionMatch && functionDefinitionMatch[1]) {
-                    const functionNameToCall = functionDefinitionMatch[1];
-                    console.log(`Detected function definition: ${functionNameToCall}`);
-                    // Construct code that defines the function, calls it, and returns the result
-                    finalCodeToRun = `${runCode}\nreturn ${functionNameToCall}();`; // Note the "return" here!
-                    console.log(`Modified code to call ${functionNameToCall} and return its result.`);
-                } else {
-                    console.warn("Could not detect standard function definition. Executing original code.");
-                    // If no function definition is found, run the original code.
-                    // The timeline override (capturedTimeline) is the only way to get the timeline.
-                }
-                // --- *** END NEW *** ---
-  
-                console.log("Running animation code:\n---\n", finalCodeToRun, "\n---");
-  
-                const container = previewRef.current;
-  
-                // Execute the potentially modified code string
-                const runner = new Function("anime", "container", finalCodeToRun);
-                const resultFromRunner = runner(animeInstance, container); // This should now contain the returned timeline
-  
-                console.log("Code execution finished.");
-                // Log details *after* execution
-                console.log("Timeline captured via override:", capturedTimeline);
-                console.log("Was anime.timeline override triggered?", timelineCreated);
-                console.log("Result returned directly from runner execution:", resultFromRunner);
-  
-                // --- Check results and play ---
-                // Prioritize the timeline returned by the function call
-                const finalTimeline = resultFromRunner || capturedTimeline;
-                window.logoAnimation = finalTimeline; // Set the global ref
-  
-                if (window.logoAnimation) {
-                   if (typeof window.logoAnimation.play === 'function' && typeof window.logoAnimation.restart === 'function') {
-                      console.log("Successfully obtained timeline. Restarting and playing.");
-                      window.logoAnimation.restart();
-                      window.logoAnimation.play();
-                      setIsPlaying(true);
-                      setError(null);
-                      toast({ title: "Success", description: "Animation executed.", variant: "default" })
-                   } else {
-                      console.warn("Obtained object is not a valid anime.js timeline:", window.logoAnimation);
-                      setError("Generated code ran but didn't produce a playable timeline.");
-                      toast({ title: "Execution Warning", description: "Code ran, but no valid animation timeline was created.", variant: "warning" });
-                      window.logoAnimation = undefined;
-                   }
-                } else {
-                   console.warn("Execution completed, but no animation timeline was returned or captured via override.");
-                   setError("Generated code ran but did not create/return an animation using anime.timeline().");
-                   toast({ title: "Execution Issue", description: "Code executed, but it seems no animation timeline was created or returned.", variant: "warning" })
-                   setIsPlaying(false);
-                }
-  
-              } catch (err: any) {
-                // ... (catch block) ...
-                console.error("Error executing animation code:", err);
-                setError(`Animation Execution Error: ${err.message || "Unknown error"}`);
-                toast({ title: "Execution Error", description: `Failed to run animation code: ${err.message}`, variant: "destructive" })
-                setIsPlaying(false);
+  const executeAnimationCode = useCallback(
+    (code: string) => {
+      console.log("Executing animation code...");
+      setError(null);
+
+      if (!code?.trim()) return;
+      if (!window.anime) return;
+      if (!previewRef.current) return;
+
+      resetSvg();
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (!previewRef.current || !overlayRef.current) return;
+
+          const elementsCheck = overlayRef.current.querySelectorAll("svg *[id]");
+          console.log(`Verifying elements inside timeout: ${elementsCheck.length} with IDs found.`);
+          
+          if (elementsCheck.length === 0) {
+            console.warn("No SVG elements with IDs found just before execution.");
+            setError("SVG elements not ready for animation.");
+            toast({ title: "Error", description: "SVG elements not found in time.", variant: "destructive" });
+            return;
+          }
+
+          const animeInstance = window.anime;
+          const origTimeline = animeInstance.timeline;
+          let timelineCreated = false;
+          let capturedTimeline: any = null;
+
+          animeInstance.timeline = ((opts: any) => {
+            console.log("anime.timeline() override triggered.");
+            const tl = origTimeline.call(animeInstance, opts);
+            capturedTimeline = tl;
+            timelineCreated = true;
+            return tl;
+          }) as any;
+
+          try {
+            let runCode = code;
+            const domContentMatch = runCode.match(/document\.addEventListener\(['"]DOMContentLoaded['"],\s*function\s*\(\)\s*{([\s\S]*)}\);?/i);
+            if (domContentMatch && domContentMatch[1]) {
+              console.log("Stripped DOMContentLoaded wrapper.");
+              runCode = domContentMatch[1].trim();
+            }
+
+            let finalCodeToRun = runCode;
+            const functionDefinitionMatch = runCode.match(/function\s+([a-zA-Z0-9_]+)\s*\(/);
+
+            if (functionDefinitionMatch && functionDefinitionMatch[1]) {
+              const functionNameToCall = functionDefinitionMatch[1];
+              console.log(`Detected function definition: ${functionNameToCall}`);
+              finalCodeToRun = `${runCode}\nreturn ${functionNameToCall}();`;
+            }
+
+            console.log("Running animation code:\n---\n", finalCodeToRun, "\n---");
+
+            // Use overlayRef.current instead of previewRef.current
+            const container = overlayRef.current;
+            const runner = new Function("anime", "container", finalCodeToRun);
+            const resultFromRunner = runner(animeInstance, container);
+
+            console.log("Code execution finished.");
+            console.log("Timeline captured via override:", capturedTimeline);
+            console.log("Result returned directly from runner execution:", resultFromRunner);
+
+            const finalTimeline = resultFromRunner || capturedTimeline;
+            window.logoAnimation = finalTimeline;
+
+            if (window.logoAnimation) {
+              if (typeof window.logoAnimation.play === 'function' && typeof window.logoAnimation.restart === 'function') {
+                console.log("Successfully obtained timeline. Restarting and playing.");
+                window.logoAnimation.restart();
+                window.logoAnimation.play();
+                setIsPlaying(true);
+                setError(null);
+                toast({ title: "Success", description: "Animation executed.", variant: "default" });
+              } else {
+                console.warn("Obtained object is not a valid anime.js timeline:", window.logoAnimation);
+                setError("Generated code ran but didn't produce a playable timeline.");
+                toast({ title: "Execution Warning", description: "Code ran, but no valid animation timeline was created.", variant: "warning" });
                 window.logoAnimation = undefined;
-              } finally {
-                // Restore original timeline function
-                if (animeInstance) {
-                   animeInstance.timeline = origTimeline;
-                   console.log("Restored original anime.timeline function.");
-                }
               }
-           }, 50);
-        });
-      },
-      [toast, resetSvg]
-    );
+            } else {
+              console.warn("No animation timeline was returned or captured.");
+              setError("Generated code ran but did not create/return an animation using anime.timeline().");
+              toast({ title: "Execution Issue", description: "Code executed, but no animation timeline was created.", variant: "warning" });
+              setIsPlaying(false);
+            }
+          } catch (err: any) {
+            console.error("Error executing animation code:", err);
+            setError(`Animation Execution Error: ${err.message || "Unknown error"}`);
+            toast({ title: "Execution Error", description: `Failed to run animation code: ${err.message}`, variant: "destructive" });
+            setIsPlaying(false);
+            window.logoAnimation = undefined;
+          } finally {
+            if (animeInstance) {
+              animeInstance.timeline = origTimeline;
+            }
+          }
+        }, 50);
+      });
+    },
+    [toast, resetSvg]
+  );
 
   // Generate code
   const generateAnimationCode = async () => {
@@ -242,7 +278,6 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
         setIsPlaying(false);
     }
      window.logoAnimation = undefined; // Clear ref to old animation
-
 
     try {
       console.log("Sending request to generate animation with analysis:", editedAnalysis);
@@ -310,7 +345,6 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
       }
   }
 
-
   // Apply manual code edits
   const applyCodeChanges = () => {
     if (!animationCode?.trim()) {
@@ -347,33 +381,39 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
 
   return (
     <div className="space-y-6">
-      {/* Generation Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Animation Generator</CardTitle>
+      {/* Background Video Card */}
+      <Card className="bg-gray-900 border-purple-900/30 shadow-lg shadow-purple-900/10">
+        <CardHeader className="border-b border-purple-900/20">
+          <CardTitle className="text-white">Background Video</CardTitle>
         </CardHeader>
-        <CardContent>
-           {/* Analysis Editor - Moved Up for better flow */}
-           <div className="mb-4 bg-gray-100 p-4 rounded-md border">
-              <h3 className="font-medium mb-2 text-gray-800">1. Edit Analysis (Optional)</h3>
-              <p className="text-sm text-gray-600 mb-2">
-                Modify the description to influence the generated animation's style or focus.
-              </p>
-              <Textarea
-                value={editedAnalysis?.conceptDescription || ""}
-                onChange={handleConceptDescriptionChange}
-                className="h-[100px] bg-white mb-2"
-                placeholder="Describe the key elements and the desired animation concept (e.g., 'The shapes should assemble from the center outwards smoothly.')"
-              />
-            </div>
+        <CardContent className="pt-6 bg-gray-900/80">
+          <VideoUpload onVideoSelect={setBackgroundVideo} />
+        </CardContent>
+      </Card>
+
+      {/* Generation Card */}
+      <Card className="bg-gray-900 border-purple-900/30 shadow-lg shadow-purple-900/10">
+        <CardHeader className="border-b border-purple-900/20">
+          <CardTitle className="text-white">Animation Generator</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6 bg-gray-900/80">
+          {/* Analysis Editor */}
+          <div className="mb-4 bg-gray-800 p-4 rounded-md border border-purple-900/30 relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-800/10 rounded-full blur-3xl"></div>
+            <h3 className="font-medium mb-2 text-white relative z-10">Edit Animation Concept</h3>
+            <Textarea
+              value={editedAnalysis?.conceptDescription || ""}
+              onChange={handleConceptDescriptionChange}
+              className="h-[100px] bg-gray-900 border-gray-700 text-gray-300 mb-2 relative z-10"
+              placeholder="Describe the animation concept..."
+            />
+          </div>
 
           <div className="flex flex-wrap gap-2">
-             <h3 className="font-medium mb-2 text-gray-800 w-full">2. Generate or Modify Code</h3>
             <Button
               onClick={generateAnimationCode}
               disabled={isGenerating || !isAnimeJsLoaded || !editedAnalysis?.conceptDescription}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400"
-              title={!editedAnalysis?.conceptDescription ? "Please provide an analysis description" : "Generate animation based on the analysis above"}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white shadow-lg shadow-purple-900/30 transition-all hover:shadow-xl hover:shadow-purple-700/40 disabled:from-gray-700 disabled:to-gray-600 disabled:shadow-none"
             >
               {isGenerating ? (
                 <>
@@ -385,59 +425,63 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
               )}
             </Button>
           </div>
-
-          {!isAnimeJsLoaded && <p className="mt-2 text-sm text-yellow-600">Loading animation library (anime.js)...</p>}
-          {error && <p className="mt-4 text-red-600 font-medium">Error: {error}</p>}
         </CardContent>
       </Card>
 
       {/* Preview Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>3. Preview</CardTitle>
+      <Card className="bg-gray-900 border-purple-900/30 shadow-lg shadow-purple-900/10 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-purple-900/20">
+          <CardTitle className="text-white">Preview</CardTitle>
           <Button
             onClick={replayAnimation}
-            disabled={!isAnimeJsLoaded || isGenerating} // Disable if generating
+            disabled={!isAnimeJsLoaded || isGenerating}
             variant="outline"
             size="sm"
-            className="border-purple-600 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+            className="border-purple-600 text-purple-400 hover:bg-purple-900/20 hover:text-purple-300 transition-all"
           >
-            <RefreshCw className="mr-2 h-4 w-4" /> Replay Last Animation
+            <RefreshCw className="mr-2 h-4 w-4" /> Replay Animation
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6 p-0 relative">
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
           <div
             ref={previewRef}
-            className="border rounded p-4 bg-gray-50 min-h-[200px] flex items-center justify-center overflow-hidden" // Added min-height and overflow
-            // Use dangerouslySetInnerHTML only on initial load / reset
-            // Subsequent animations manipulate the existing DOM
-          />
-           {/* Status indicator can be added here if needed */}
-           {/* {isPlaying && <p className="mt-2 text-sm text-green-600">Animation playing...</p>} */}
-
+            className="relative overflow-hidden min-h-[300px] flex items-center justify-center bg-black"
+            style={{ backgroundColor: backgroundVideo ? 'black' : '#121212' }}
+          >
+            {backgroundVideo && (
+              <video
+                src={backgroundVideo}
+                className="w-full h-auto"
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+              />
+            )}
+            {/* SVG overlay container will be created by resetSvg */}
+          </div>
         </CardContent>
       </Card>
 
-       {/* Code Editor Section (Only show if code exists) */}
-       {animationCode && (
-        <Card>
-          <CardHeader>
-            <CardTitle>4. Edit Code Directly (Advanced)</CardTitle>
+      {/* Code Editor Section (Only show if code exists) */}
+      {animationCode && (
+        <Card className="bg-gray-900 border-purple-900/30 shadow-lg shadow-purple-900/10">
+          <CardHeader className="border-b border-purple-900/20">
+            <CardTitle className="text-white">Edit Code (Advanced)</CardTitle>
           </CardHeader>
-          <CardContent>
-             <div className="bg-gray-100 p-4 rounded-md border space-y-4">
+          <CardContent className="pt-6 bg-gray-900/80">
+            <div className="bg-gray-800/80 p-4 rounded-md border border-purple-900/30 space-y-4 relative overflow-hidden">
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-800/10 rounded-full blur-3xl"></div>
               <Textarea
                 value={animationCode}
-                onChange={(e) => {
-                    setAnimationCode(e.target.value)
-                    // Optionally clear error when user starts typing
-                    // if(error) setError(null);
-                }}
-                className="font-mono text-sm h-[250px] whitespace-pre-wrap bg-white" // Use pre-wrap
+                onChange={(e) => setAnimationCode(e.target.value)}
+                className="font-mono text-sm h-[250px] whitespace-pre-wrap bg-gray-900 border-gray-700 text-gray-300 relative z-10"
                 spellCheck="false"
               />
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white transition-all"
+                className="bg-purple-600 hover:bg-purple-700 text-white transition-all shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-700/40 relative z-10"
                 onClick={applyCodeChanges}
                 disabled={!isAnimeJsLoaded || isGenerating}
               >
@@ -448,7 +492,13 @@ export function AnimationStage({ analysis, svgLayers, svgContent }: AnimationSta
         </Card>
       )}
 
-      {/* Removed Tabs - Simplified flow */}
+      {/* Error display */}
+      {error && (
+        <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md text-red-300 text-sm">
+          <p className="font-medium mb-1">Error:</p>
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
 }

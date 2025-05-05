@@ -20,67 +20,68 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 270 75% 60%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 272 76% 95%;
+    --accent-foreground: 270 75% 60%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --ring: 270 75% 60%;
+    --chart-1: 270 75% 60%;
+    --chart-2: 260 75% 60%;
+    --chart-3: 280 75% 60%;
+    --chart-4: 290 75% 60%;
+    --chart-5: 250 75% 60%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 270 75% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 270 75% 60%;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 240 10% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 240 10% 4%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+    --primary: 270 75% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
+    --muted: 240 5% 10%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 270 60% 12%;
+    --accent-foreground: 270 75% 60%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 270 50% 15%;
+    --input: 240 5% 12%;
+    --ring: 270 75% 60%;
+    --chart-1: 270 75% 60%;
+    --chart-2: 260 75% 55%;
+    --chart-3: 280 75% 55%;
+    --chart-4: 290 75% 50%;
+    --chart-5: 250 75% 65%;
+    --sidebar-background: 240 10% 3%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 270 75% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 270 60% 12%;
+    --sidebar-accent-foreground: 270 75% 60%;
+    --sidebar-border: 270 50% 15%;
+    --sidebar-ring: 270 75% 60%;
   }
 }
 
@@ -88,7 +89,71 @@ body {
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Custom shadow utility classes */
+  .shadow-purple-glow {
+    box-shadow: 0 0 15px rgba(149, 76, 233, 0.15), 0 0 5px rgba(149, 76, 233, 0.05);
+  }
+  
+  .shadow-purple-glow-lg {
+    box-shadow: 0 0 25px rgba(149, 76, 233, 0.2), 0 0 8px rgba(149, 76, 233, 0.1);
+  }
+  
+  /* Custom background utilities */
+  .bg-dark-gradient {
+    background: linear-gradient(to bottom right, rgb(20, 20, 23), rgb(13, 13, 15));
+  }
+  
+  .bg-purple-gradient {
+    background: linear-gradient(to right, rgb(109, 40, 217), rgb(124, 58, 237));
+  }
+  
+  /* Custom border utility */
+  .border-purple-gradient {
+    border-color: rgba(149, 76, 233, 0.3);
+    border-style: solid;
+  }
+}
+
+/* Custom scrollbar for dark theme */
+.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgb(17, 17, 20);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(149, 76, 233, 0.3);
+  border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(149, 76, 233, 0.5);
+}
+
+/* Custom blur effect for glassmorphism */
+.backdrop-blur-purple {
+  backdrop-filter: blur(8px);
+  background-color: rgba(20, 20, 23, 0.7);
+}
+
+/* Animation for purple glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(149, 76, 233, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(149, 76, 233, 0.4);
+  }
+}
+
+.animate-purple-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
 }
