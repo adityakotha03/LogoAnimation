@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight, Play } from "lucide-react"
 import { StepNavigation, type Step } from "@/components/step-navigation"
 import { UploadStage } from "@/components/analyzer/upload-stage"
 import { CaptionsStage } from "@/components/analyzer/captions-stage"
@@ -176,28 +176,36 @@ export default function AnalyzerPage() {
   }, [activeStepId, isAnalyzing, analysis, layers])
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <header className="border-b bg-purple-600 text-white">
+    <main className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background glow elements */}
+      <div className="absolute top-0 left-1/4 w-1/2 h-1/2 bg-purple-800/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-1/4 w-1/2 h-1/2 bg-purple-800/5 rounded-full blur-3xl"></div>
+      
+      {/* Header */}
+      <header className="border-b border-purple-900/50 bg-black/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span className="font-bold">Back to Animify</span>
+              <span className="font-bold flex items-center">
+                <Play className="h-4 w-4 mr-1 text-purple-500" />
+                Back to Animify
+              </span>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-6">SVG Animation Creator</h1>
+      <div className="container mx-auto py-12 px-4 relative z-10">
+        <h1 className="text-4xl font-bold mb-8 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">SVG Animation Creator</h1>
 
         <StepNavigation steps={steps} onStepClick={handleStepClick} />
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-gray-900/80 rounded-xl border border-purple-900/30 shadow-lg shadow-purple-900/10 overflow-hidden backdrop-blur-sm">
           {activeStepId === "upload" && (
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Upload Your SVG</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold mb-4 text-white">Upload Your SVG</h2>
+              <p className="text-gray-400 mb-6">
                 Start by uploading your layered SVG file. We'll analyze its structure and suggest animations.
               </p>
 
@@ -205,7 +213,10 @@ export default function AnalyzerPage() {
 
               {svgContent && layers.length > 0 && (
                 <div className="mt-6 flex justify-end">
-                  <Button onClick={handleNextFromUpload} className="bg-purple-600 hover:bg-purple-700">
+                  <Button 
+                    onClick={handleNextFromUpload} 
+                    className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white shadow-lg shadow-purple-900/30 transition-all hover:shadow-xl hover:shadow-purple-700/40"
+                  >
                     Next: Generate Captions <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -215,8 +226,8 @@ export default function AnalyzerPage() {
 
           {activeStepId === "captions" && (
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Generate Captions</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold mb-4 text-white">Generate Captions</h2>
+              <p className="text-gray-400 mb-6">
                 We're analyzing your SVG to understand its components and suggest meaningful animations.
               </p>
 
@@ -224,7 +235,10 @@ export default function AnalyzerPage() {
 
               {analysis && (
                 <div className="mt-6 flex justify-end">
-                  <Button onClick={handleNextFromCaptions} className="bg-purple-600 hover:bg-purple-700">
+                  <Button 
+                    onClick={handleNextFromCaptions} 
+                    className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white shadow-lg shadow-purple-900/30 transition-all hover:shadow-xl hover:shadow-purple-700/40"
+                  >
                     Next: Animate <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -234,8 +248,8 @@ export default function AnalyzerPage() {
 
           {activeStepId === "animate" && (
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Generate Animation</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold mb-4 text-white">Generate Animation</h2>
+              <p className="text-gray-400 mb-6">
                 Now we'll generate a beautiful animation based on the analysis of your SVG.
               </p>
 
